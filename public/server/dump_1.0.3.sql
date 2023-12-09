@@ -1,0 +1,1 @@
+ALTER TABLE `lsv_users` ADD `agent_id` VARCHAR(255) NULL AFTER `is_blocked`;

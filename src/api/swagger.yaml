@@ -1,0 +1,132 @@
+swagger: '2.0'
+
+info:
+    title: LiveSmart Server Video API
+    description: API description for external applications that integrates with LiveSmart Server Video.
+    version: 1.0.14
+
+basePath: /api
+
+schemes:
+    - https
+    - http
+
+paths:
+    /meeting:
+        post:
+            tags:
+                - 'meeting'
+            summary: 'Create meeting'
+            description: 'Create meeting'
+            parameters:
+                - in: body
+                  name: Create
+                  description: Create Join URL
+                  schema:
+                      type: object
+                      required:
+                          - room
+                      properties:
+                          room:
+                              type: string
+                          agentName:
+                              type: string
+                          visitorName:
+                              type: string
+                          datetime:
+                              type: string
+                          duration:
+                              type: string
+                          config:
+                              type: string
+            consumes:
+                - 'application/json'
+            produces:
+                - 'application/json'
+            security:
+                - secretApiKey: []
+            responses:
+                '200':
+                    description: 'Meeting created'
+                    schema:
+                        $ref: '#/definitions/MeetingResponse'
+                '403':
+                    description: 'Unauthorized!'
+    /join:
+        post:
+            tags:
+                - 'join'
+            summary: 'Create direct join'
+            description: 'Create join'
+            parameters:
+                - in: body
+                  name: Join
+                  description: Custom Join URL
+                  schema:
+                      type: object
+                      required:
+                          - room
+                          - agentName
+                          - visitorName
+                      properties:
+                          room:
+                              type: string
+                          agentName:
+                              type: string
+                          visitorName:
+                              type: string
+            consumes:
+                - 'application/json'
+            produces:
+                - 'application/json'
+            security:
+                - secretApiKey: []
+            responses:
+                '200':
+                    description: 'Direct join created'
+                    schema:
+                        $ref: '#/definitions/JoinResponse'
+                '403':
+                    description: 'Unauthorized!'
+    /meetings:
+        get:
+            tags:
+                - 'meetings'
+            summary: 'Get Meeting List'
+            description: 'Meeting list'
+            consumes:
+                - 'application/json'
+            produces:
+                - 'application/json'
+            security:
+                - secretApiKey: []
+            responses:
+                '200':
+                    description: 'Meetings list'
+                    schema:
+                        $ref: '#/definitions/MeetingsResponse'
+                '403':
+                    description: 'Unauthorized!'
+securityDefinitions:
+    secretApiKey:
+        type: 'apiKey'
+        name: 'authorization'
+        in: 'header'
+        description: 'Format like this: authorization: {API_KEY_SECRET}'
+
+definitions:
+    MeetingResponse:
+        type: 'object'
+        properties:
+            meeting:
+                type: 'string'
+    MeetingsResponse:
+        type: 'object'
+        properties:
+            meeting:
+                type: 'string'
+    JoinResponse:
+        type: 'object'
+        properties:
+            join:
+                type: 'string'

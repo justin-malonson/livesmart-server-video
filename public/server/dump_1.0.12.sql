@@ -1,0 +1,2 @@
+ALTER TABLE `lsv_subscriptions` CHANGE `payment_method` `payment_method` ENUM('paypal','stripe','authorizenet','manual') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'paypal';
+ALTER TABLE `lsv_subscriptions` ADD `date_added` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `email_sent`;

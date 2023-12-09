@@ -1,0 +1,63 @@
+{
+	"agentName": "Video Chat Representative",
+	"metaTitle": "LiveSmart Server Video",
+	"entryForm": {
+		"visitorName_enabled": true
+	},
+	"smartVideoLanguage": "en_US",
+	"videoScreen": {
+		"localFeedMirrored": true,
+		"dateFormat": "default",
+		"exitMeetingOnTime": false,
+		"meetingTimer": false,
+		"exitMeetingOnTimeAgent": false,
+		"disableVideoAudio": false,
+		"disableAttendeeVideosOff": false,
+		"hostOnlyAccess": false,
+		"admit": false,
+		"terms": "",
+		"greenRoom": true,
+		"lockedFeed": true,
+		"getSnapshot": false,
+		"getReaction": true,
+		"breakout": false,
+		"enable_chat_gpt": false,
+		"exitMeeting": false,
+		"screenConstraint" : {"video": {"displaySurface": "browser"}, "audio": {"channelCount": 2, "echoCancellation": false, "noiseSuppression": false}},
+		"videoConstraint" : {"width": {"min": 640, "ideal": 1920, "max": 3840}, "height": {"min": 480, "ideal": 1080, "max": 2160}, "aspectRatio": 1.777, "frameRate": {"min": 5, "ideal": 15, "max": 30}},
+		"audioConstraint" : {"echoCancellation": true, "noiseSuppression": true, "sampleRate": 44100}
+	},
+	"recording": {
+		"enabled": true,
+		"screen": true,
+		"saveServer": false,
+		"autoStart": false,
+		"filename": "record_%room%_%datetime%",
+		"download": true
+	},
+	"whiteboard": {
+		"enabled": true
+	},
+	"sharevideo": {
+		"enabled": true
+	},
+	"serverSide": {
+		"chatHistory": false,
+		"loginForm": false,
+		"checkRoom": false,
+		"payment_enabled": false
+	},
+	"transcribe": {
+		"enabled": false,
+		"voiceCommands": false,
+		"language": "en-US",
+		"languageTo": "",
+		"apiKey": "",
+		"textSpeechChat": false,
+		"textSpeechTranscribe": false
+	},
+	"virtualBackground": {
+		"blur": false,
+		"backgrounds": false
+	}
+}

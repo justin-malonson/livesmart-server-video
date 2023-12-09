@@ -1,0 +1,87 @@
+{
+	"agentName": "Video Chat Representative",
+	"smartVideoLanguage": "en_US",
+	"videoScreen": {
+		"localFeedMirrored": true,
+		"dateFormat": "default",
+		"exitMeetingOnTime": false,
+		"meetingTimer": false,
+		"exitMeetingOnTimeAgent": false,
+		"disableVideoAudio": true,
+		"hostOnlyAccess": true,
+		"admit": true,
+		"disableAttendeeVideosOff": true,
+		"lockedFeed": false,
+		"getSnapshot": false,
+		"greenRoom": true,
+		"videoConstraint": {
+			"width": {
+				"min": "640",
+				"ideal": "1920",
+				"max": "3840"
+			},
+			"height": {
+				"min": "480",
+				"ideal": "1080",
+				"max": "2160"
+			},
+			"aspectRatio": "1.777",
+			"frameRate": {
+				"min": "5",
+				"ideal": "15",
+				"max": "30"
+			}
+		},
+		"audioConstraint": {
+			"echoCancellation": "true",
+			"noiseSuppression": "true",
+			"sampleRate": "44100"
+		},
+		"screenConstraint": {
+			"frameRate": {
+				"min": "5",
+				"ideal": "15",
+				"max": "30"
+			}
+		},
+		"disableVideo": true,
+		"enable_chat_gpt": false,
+		"exitMeeting": false
+	},
+	"recording": {
+		"enabled": false,
+		"screen": false,
+		"saveServer": false,
+		"autoStart": false,
+		"download": false
+	},
+	"whiteboard": {
+		"enabled": false
+	},
+	"youtube": {
+		"enabled": true
+	},
+	"sharevideo": {
+		"enabled": false
+	},
+	"serverSide": {
+		"chatHistory": false,
+		"loginForm": false,
+		"checkRoom": false,
+		"payment_enabled": false
+	},
+	"transcribe": {
+		"enabled": false,
+		"textSpeechChat": false,
+		"textSpeechTranscribe": false,
+		"voiceCommands": false
+	},
+	"virtualBackground": {
+		"blur": false,
+		"backgrounds": false
+	},
+	"entryForm": {
+		"visitorName_enabled": false
+	},
+	"metaTitle": ""
+}

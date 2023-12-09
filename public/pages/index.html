@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Title and Icon -->
+
+        <title>LiveSmart Server Video</title>
+        <!-- Favicons -->
+        <link rel="apple-touch-icon" href="apple-touch-icon.png">
+        <link rel="icon" href="../favicon.ico">
+
+        <!-- Meta Information -->
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="LiveSmart Server Video Chat is a standalone web application based on SFU topology, with video, audio, recording, screen sharing and file transfer face-to-face communication channels and integrated chat.">
+        <meta name="keywords" content="server, sfu, video conference, live video, chat, webrtc, online video, whiteboard, screen share, file transfer, mobile, recording, multi users, speech to text, snapshot">
+
+
+        <!-- https://ogp.me -->
+
+        <meta property="og:type" content="app-webrtc" />
+        <meta property="og:site_name" content="LiveSmart Server Video" />
+        <meta property="og:title" content="LiveSmart Server Video" />
+        <meta
+            property="og:description"
+            content="LiveSmart Server Video is a standalone web application based on SFU topology, with video, audio, recording, screen sharing and file transfer face-to-face communication channels and integrated chat."
+        />
+        <meta property="og:image" content="https://livesmart.video/images/logo.png" />
+
+        <!-- Custom fonts for this template-->
+        <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+        <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+        <script src="./dash/vendor/jquery/jquery.min.js"></script>
+        <script src="./dash/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="./dash/vendor/jquery-easing/jquery.easing.min.js"></script>
+    </head>
+
+    <body class="banner">
+        <script>
+            function copyUrl(url) {
+                var aux = document.createElement("input");
+                aux.setAttribute("value", url);
+                document.body.appendChild(aux);
+                aux.select();
+                document.execCommand("copy");
+                document.body.removeChild(aux);
+            };
+            var visitorUrl, agentUrl;
+            function generateLink() {
+                let id = Math.random().toString(36).slice(2).substring(0, 10);
+                const hrefUrl = new URL(window.location.href);
+                let room = {};
+                let roomObject = (Object.keys(room).length > 0) ? '?p=' + window.btoa(unescape(encodeURIComponent(JSON.stringify(room)))) : ''
+                visitorUrl = hrefUrl.protocol + '//' + hrefUrl.host + '/' + id + roomObject;
+                room.admin = 1;
+                agentUrl = hrefUrl.protocol + '//' + hrefUrl.host + '/' + id + '?p=' + window.btoa(unescape(encodeURIComponent(JSON.stringify(room))));
+                copyUrl(visitorUrl);
+                window.open(agentUrl);
+                var text = $('#generateLinkModal').html();
+                $('#generateLinkModal').html(text.replace('[generateLink]', visitorUrl));
+                $('#generateLinkModal').modal('toggle');
+                $('#copyAttendeeUrl').off();
+                $('#copyAttendeeUrl').on('click', function () {
+                    copyUrl(visitorUrl);
+                    $('#generateLinkModal').modal('hide');
+                });
+            }
+        </script>
+        <div class="modal fade" id="generateLinkModal" tabindex="-1" role="dialog" aria-labelledby="generateLinkModal" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Video Conference Attendee URL</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Organizer URL is opened in a new tab and visitor URL is stored in your clipboard, so you can send to your attendees. <br/> You can copy it from here: <br/> [generateLink]</div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary mr-auto" type="button" id="copyAttendeeUrl">Copy URL</button>
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="image-bg">
+            <div class="container">
+
+                <!-- Outer Row -->
+                <div class="row justify-content-center">
+
+                    <div class="col-lg-12 col-md-12">
+
+                        <div class="o-hidden border-0 my-5">
+                            <div class="card-body p-0">
+                                <!-- Nested Row within Card Body -->
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="p-5 text-white">
+                                            <h1 >
+                                                Enhance your<br>Live Video Chat
+                                            </h1>
+                                            LiveSmart Server Video is a standalone web application with video, audio, recording, screensharing, file transfer and whiteboard face-to-face communication channels and integrated chat. 
+                                            It has own communication server, which means you can theoretically unlimited number of attendees. It does not require any additional installations or third party logins and accounts. 
+                                            <br/><br/>
+                                            <a href="/dash/loginform.php" class="text-white">Login to dashboard</a><br/>
+                                            <a href="/dash/regform.php" class="text-white">Register to dashboard</a><br/>
+                                            <a href="#" onclick="generateLink();" class="text-white">Start new meeting</a><br/>
+                                            <a href="https://livesmart.video/userguide-sfu" target="_blank" class="text-white">LiveSmart Server Video page</a><br/>
+
+                                        </div>
+
+                                    </div>
+                                    <div class="col-lg-6 p-5 bg-index-image">&nbsp;</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <footer class="text-center">Copyright © LiveSmart. All Rights Reserved.</footer>
+    </body>
+
+</html>

@@ -1,0 +1,1 @@
+ALTER TABLE `wp_latepoint_bookings` ADD `livesmart_agent_url` VARCHAR(255) NULL AFTER `updated_at`, ADD `livesmart_visitor_url` VARCHAR(255) NULL AFTER `livesmart_agent_url`;

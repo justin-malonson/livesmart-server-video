@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- Title and Icon -->
+
+    <title>LiveSmart Server Video</title>
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" href="../img/logo.png">
+    <link rel="icon" href="../favicon.ico">
+
+    <!-- Meta Information -->
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="LiveSmart Server Video Chat is a standalone web application based on SFU topology, with video, audio, recording, screen sharing and file transfer face-to-face communication channels and integrated chat.">
+    <meta name="keywords"
+        content="server, sfu, video conference, live video, chat, webrtc, online video, whiteboard, screen share, file transfer, mobile, recording, multi users, speech to text, snapshot">
+
+
+    <!-- https://ogp.me -->
+
+    <meta property="og:type" content="app-webrtc" />
+    <meta property="og:site_name" content="LiveSmart Server Video" />
+    <meta property="og:title" content="LiveSmart Server Video" />
+    <meta property="og:description"
+        content="LiveSmart Server Video is a standalone web application based on SFU topology, with video, audio, recording, screen sharing and file transfer face-to-face communication channels and integrated chat." />
+    <meta property="og:image" content="https://livesmart.video/images/logo.png" />
+
+    <!-- StyleSheet -->
+    <link rel="stylesheet" href="../css/conference.css" />
+
+    <!-- Js scripts -->
+    <script defer src="/socket.io/socket.io.js"></script>
+    <script defer src="../sfu/MediasoupClient.js"></script>
+
+    <script defer src="../js/loader.js"></script>
+
+    <!-- <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.2"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.0"></script> -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</head>
+
+<body onbeforeunload="return wantExit();">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <span id="recordingStatus"></span>
+    <div id="initialScreen">
+        <p>
+            <span id="loading"></span> <span class="loader__dot">.</span><span class="loader__dot">.</span><span
+                class="loader__dot">.</span>
+            <br />
+            <span id="allowCameraMicrophone"></span>
+        </p>
+    </div>
+    <section id="greenRoom">
+        <main class="d-flex align-items-center min-vh-100 py-3 py-md-0 gray-background">
+            <div class="container d-flex align-items-center">
+                <div class="row no-gutters">
+                    <div class="col-md-6">
+                        <div class="card-body col-md-12 h-75 videoholder" id="videoContainer">
+                            <video id="initVideo" playsinline="true" autoplay="" class="mirror"
+                                poster="../img/loader.gif"></video>
+                        </div>
+                        <div class="card-body col-md-12 text-center">
+                            <button id="initVideoButton" class="fas fa-video" onclick="handleVideo(event)"
+                                aria-hidden="true"></button>
+                            <button id="initAudioButton" class="fas fa-microphone" onclick="handleAudio(event)"
+                                aria-hidden="true"></button>
+                            <button id="initBackground" class="fas fa-user-gear" style="display: none;" onclick="toggleModal(true)"
+                                aria-hidden="true"></button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 left-border">
+                        <div class="card-body">
+                            <form id="greenRoomForm" class="needs-validation" novalidate>
+                                <div class="input-group">
+                                    <div class="input-group-text">
+                                        <i class="fas fa-camera inlineicons" aria-hidden="true"></i>
+                                    </div>
+                                    <select class="form-control form-select" id="greenRoomVideoSelect"></select>
+                                </div>
+                                <div class="input-group">
+                                    <div class="input-group-text">
+                                        <i class="fas fa-microphone inlineicons" aria-hidden="true"></i>
+                                    </div>
+                                    <select class="form-control form-select" id="greenRoomMicSelect">
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-text">
+                                            <i class="fas fa-headphones inlineicons" aria-hidden="true"></i>
+                                        </div>
+                                        <select class="form-control form-select" id="greenRoomSpeakerSelect"></select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" name="name" id="joinerName" required
+                                        class="form-control waiting-fields">
+                                    <div class="invalid-feedback" id="invalidName"></div>
+                                </div>
+                                <div class="form-group d-none" id="termsContainer">
+                                    <div class="form-check">
+                                        <input class="form-check-input waiting-fields" type="checkbox" value="1"
+                                            required id="termsCheckbox">
+                                        <label for="termsCheckbox" class="form-label mt-3" id="termsCon"></label>
+                                        <div class="invalid-feedback" id="invalidTerms"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group text-center">
+                                    <input name="joinMeeting" id="joinMeeting" class="btn btn-block login-btn mb-4"
+                                        type="submit">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+    <section id="protectedRoom">
+        <main class="d-flex align-items-center min-vh-100 min-vw-100 py-3 py-md-0 gray-background">
+            <div class="container d-flex align-items-center w-100">
+                <div class="row d-flex justify-content-center w-100">
+                    <div class="col-md-12 text-center">
+                        <h3 id="meetingIsPrivate"></h3>
+                        <h4 id="provideCredentials"></h4>
+                        <div class="card-body w-100">
+                            <form id="protectedForm" class="needs-validation" novalidate>
+                                <div class="input-group mb-0">
+                                    <input type="text" class="form-control protected-fields" id="nameProtected"
+                                        required>
+                                    <div class="invalid-feedback" id="invalidProtectedName"></div>
+                                </div>
+                                <div class="input-group mb-0">
+                                    <input type="text" class="form-control protected-fields" id="emailProtected"
+                                        required>
+                                    <div class="invalid-feedback" id="invalidProtectedEmail"></div>
+                                </div>
+                                <div class="input-group mb-0">
+                                    <input type="password" class="form-control protected-fields" id="passwordProtected"
+                                        required>
+                                    <div class="invalid-feedback" id="invalidProtectedPassword"></div>
+                                </div>
+                                <div class="form-group text-center">
+                                    <input name="joinMeetingProtected" id="joinMeetingProtected"
+                                        class="btn btn-block login-btn mb-4" type="submit">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+    <section id="simpleRoom">
+        <main class="d-flex align-items-center min-vh-100 min-vw-100 py-3 py-md-0 gray-background">
+            <div class="container d-flex align-items-center w-100">
+                <div class="row d-flex justify-content-center w-100">
+                    <div class="col-md-12 text-center">
+                        <div class="card-body w-100">
+                            <form id="simpleForm" class="needs-validation" novalidate>
+                                <div class="input-group mb-0">
+                                    <input type="text" class="form-control simple-fields" id="nameSimple" required>
+                                    <div class="invalid-feedback" id="invalidSimpleName"></div>
+                                </div>
+                                <div class="form-group text-center">
+                                    <input name="joinMeetingSimple" id="joinMeetingSimple"
+                                        class="btn btn-block login-btn mb-4" type="submit">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+    <div id="actionButtons">
+        <button id="startVideoButton" class="hidden"><i class="fas fa-video-slash"></i></button>
+        <button id="stopVideoButton" class="hidden"><i class="fas fa-video"></i></button>
+        <button id="startAudioButton" class="hidden"><i class="fas fa-microphone-slash"></i></button>
+        <button id="stopAudioButton" class="hidden"><i class="fas fa-microphone"></i></button>
+        <button id="swapCameraButton" class="hidden"><i class="fas fa-sync-alt"></i></button>
+        <button id="chatButton" class="hidden"><i class="fas fa-comments"></i></button>
+        <button id="startScreenButton" class="hidden"><i class="fas fa-tv"></i></button>
+        <button id="breakoutButton" class="hidden"><i class="fa-solid fa-table-cells-large"></i></button>
+        <button id="stopScreenButton" class="hidden"><i class="fas fa-stop-circle"></i></button>
+        <button id="whiteboardButton" class="hidden"><i class="fa fa-edit"></i></button>
+        <button id="recordingButton" class="hidden"><i class="fa fa-circle"></i></button>
+        <button id="stopRecordingButton" class="hidden"><i class="fa fa-circle"></i></button>
+        <button id="getSnapshot" class="hidden"><i class="fa-solid fa-camera-retro"></i></button>
+        <button id="reActionButtons" class="hidden"><i class="fa-regular fa-thumbs-up"></i></button>
+        <button id="raiseHandButtonMain" class="hidden"><i class="fas fa-hand-paper"></i></button>
+        <button id="lowerHandButtonMain" class="hidden"><i class="fas fa-hand-paper"></i></button>
+        <button id="chatSpeechStartButton" class="hidden"><i class="fa-solid fa-globe"></i></button>
+        <button id="settingsButton" class="hidden"><i class="fas fa-gear"></i></button>
+        <button id="exitButton" class="hidden"><i class="fa fa-sign-out"></i></button>
+    </div>
+    <div id="actionButtonMobileMenu" class="hidden">
+        <button id="actionButtonMobile"><i class="fa fa-bars"></i></button>
+    </div>
+    <div class="modal" id="reActionButtonsModal" tabindex="-1" role="dialog" aria-labelledby="actionButtonsModal"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title pb-3" id="reActionModalTitle"></h5>
+                    <button class="close" type="button" id="modalCloseButtonAction" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body border-0">
+                    <button id="thumb"><i class="fa-solid fa-thumbs-up yellow"></i></button>
+                    <button id="heart"><i class="fa-solid fa-heart crimson"></i></button>
+                    <button id="applause"><i class="fa-solid fa-hands-clapping yellow"></i></i></button>
+                    <button id="laugh"><i class="fa-solid fa-face-laugh yellow"></i></button>
+                    <button id="surprise"><i class="fa-solid fa-face-surprise yellow"></i></button>
+                    <button id="frown"><i class="fa-solid fa-face-frown yellow"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="backgroundImagesModal" tabindex="-1" role="dialog" aria-labelledby="backgroundModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title"></h5>
+                    <button class="close" type="button" id="modalCloseButtonBack" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div id="backgroundImages" class="modal-body border-0 control-virtual-images">
+                    <img src="../img/none.png" width="180" id="handleNoneBackground" class="handleBackgroundButtons"
+                        alt="None" title="None" onclick="handleBackground(event)" />
+                    <img src="../img/blur.jpg" width="180" id="handleBackground" class="handleBackgroundButtons"
+                        alt="Blur" title="Blur" onclick="handleBackground(event)" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="settings" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="settingsTitle"></h5>
+                    <button class="close" type="button" id="modalCloseButton" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body border-0" id="settingsContent">
+                    <div class="row">
+                        <div class="col-2">
+                            <!-- Tab Nav -->
+                            <ul class="nav" role="tablist">
+                                <li class="nav-item" id="tabDevicesBtn">
+                                    <a class="nav-link active" id="devices" data-bs-toggle="tab" href="#devicesTab"
+                                        role="tab" aria-controls="devices" aria-selected="true"><i class="fa-solid fa-sliders"></i></a>
+                                </li>
+                                <li class="nav-item" id="tabRoomBtn">
+                                    <a class="nav-link" id="room" data-bs-toggle="tab" href="#home" role="tab"
+                                        aria-controls="home" aria-selected="false"><i class="fa-regular fa-user" style="padding-left: 2px;"></i></a>
+                                </li>
+                                <li class="nav-item" id="tabVideoPanelBtn">
+                                    <a class="nav-link" id="videoPanel" data-bs-toggle="tab" href="#videoPanelTab" role="tab"
+                                        aria-controls="videoPanel" aria-selected="false"><i class="fa-solid fa-photo-film"></i></a>
+                                </li>
+                                <li class="nav-item" id="tabVirtualBackgroundPanel" style="display:none;">
+                                    <a class="nav-link" id="virtualBackground" data-bs-toggle="tab" href="#virtualBackgroundTab" role="tab"
+                                        aria-controls="virtualBackground" aria-selected="false"><i class="fas fa-user-gear"></i></a>
+                                </li>
+                                <li class="nav-item" id="shareButton">
+                                    <a class="nav-link" id="shareMeetingUrl" data-bs-toggle="tab" href="#shareTab"
+                                        role="tab" aria-controls="shareMeetingUrl" aria-selected="false"><i class="fas fa-share-alt" style="padding-left: 4px;"></i></a>
+                                </li>
+                            </ul>
+                            <!-- End of Tab Nav -->
+                        </div>
+                        <div class="col-10">
+                            <!-- Tab Content -->
+                            <div class="tab-content" id="tabcontent">
+                                <div class="tab-pane fade show active" id="devicesTab" role="tabpanel"
+                                    aria-labelledby="devicesTab">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <i class="fas fa-camera inlineicons" aria-hidden="true"></i>
+                                            </div>
+                                            <select class="form-control form-select" id="videoSelect"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <i class="fas fa-microphone inlineicons" aria-hidden="true"></i>
+                                            </div>
+                                            <select class="form-control form-select" id="microphoneSelect">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <i class="fas fa-headphones inlineicons" aria-hidden="true"></i>
+                                            </div>
+                                            <select class="form-control form-select" id="speakerSelect">
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home">
+                                    <div class="hidden" id="raiseHandButton">
+                                        <div class="row pt-3">
+                                            <div class="col-1">
+                                                <i class="fas fa-hand-paper"></i>
+                                            </div>
+                                            <div class="col-11 px-2"><label for="raiseHandButton" role='button'
+                                                    id="raiseHand"></label></div>
+                                        </div>
+                                    </div>
+                                    <div class="container pt-3 hidden" id="lowerHandButton">
+                                        <div class="row pt-3">
+                                            <div class="col-1">
+                                                <i class="fas fa-hand-paper"></i>
+                                            </div>
+                                            <div class="col-11 px-2"><label for="lowerHandButton" role='button'
+                                                    id="lowerHand"></label></div>
+                                        </div>
+                                    </div>
+                                    <div class="hidden" id="lockRoomButton">
+                                        <div class="row pt-3">
+                                            <div class="col-1">
+                                                <i class="fas fa-lock-open"></i>
+                                            </div>
+                                            <div class="col-11 px-2"><label for="lockRoomButton" role='button'
+                                                    id="lockRoom"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="hidden" id="unlockRoomButton">
+                                        <div class="row pt-3">
+                                            <div class="col-1">
+                                                <i class="fas fa-lock"></i>
+                                            </div>
+                                            <div class="col-11 px-2"><label for="unlockRoomButton" role='button'
+                                                    id="unlockRoom"></label></div>
+                                        </div>
+                                    </div>
+                                    <div class="hidden" id="videoShareButton">
+                                        <div class="row pt-3">
+                                            <div class="col-1">
+                                                <i class="fab fa-youtube"></i>
+                                            </div>
+                                            <div class="col-11 px-2"><label for="videoShareButton" role='button'
+                                                    id="shareVideoLabel"></label></div>
+                                        </div>
+                                    </div>
+                                    <div class="hidden" id="videoCloseBtn">
+                                        <div class="row pt-3">
+                                            <div class="col-1">
+                                                <i class="fas fa-times"></i>
+                                            </div>
+                                            <div class="col-11 px-2"><label for="videoCloseBtn" role='button'
+                                                    id="closeVideoShare"></label></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="row pt-3">
+                                            <div class="col-1">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="col-11 px-2">
+                                                    <span
+                                                        id="sessionTimeLabel"></span>&nbsp;&nbsp;<label
+                                                        id="sessionTime">00:00:00</label>
+                                                    <br/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="videoPanelTab" role="tabpanel" aria-labelledby="videoPanelTab">
+                                    <div class="form-group">
+                                        <label for="BtnAspectRatio" id="aspectRatio"></label>
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <i class="fa-solid fa-up-right-and-down-left-from-center inlineicons"
+                                                    aria-hidden="true"></i>
+                                            </div>
+                                            <select class="form-control form-select" id="BtnAspectRatio">
+                                                <option value="0" id="defaultValue"></option>
+                                                <option value="1">4:3</option>
+                                                <option value="2">16:9</option>
+                                                <option value="3">1:1</option>
+                                                <option value="4">1:2</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group pt-3">
+                                        <label for="BtnVideoObjectFit" id="videoObjectFit"></label>
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <i class="fa-solid fa-arrows-up-down-left-right inlineicons"
+                                                    aria-hidden="true"></i>
+                                            </div>
+                                            <select class="form-control form-select" id="BtnVideoObjectFit">
+                                                <option value="fill" id="fill"></option>
+                                                <option value="contain" id="contain"></option>
+                                                <option value="cover" id="cover"></option>
+                                                <option value="scale-down" id="scale-down"></option>
+                                                <option value="none" id="none"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group pt-3">
+                                        <div id="pinUnpinGridDiv">
+                                            <label for="pinVideoPosition" id="pinGrid"></label>
+                                            <div class="input-group">
+                                                <div class="input-group-text">
+                                                    <i class="fa-solid fa-map-pin inlineicons" aria-hidden="true"></i>
+                                                </div>
+                                                <select class="form-control form-select" id="pinVideoPosition">
+                                                    <option value="vertical" id="vertical"></option>
+                                                    <option value="horizontal" id="horizontal"></option>
+                                                    <option value="top" id="top"></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="virtualBackgroundTab" role="tabpanel" aria-labelledby="virtualTab">
+                                    <div id="backgroundImagesSettings" class="border-0 control-virtual-images">
+                                        <img src="../img/none.png" width="180" id="handleNoneBackgroundSettings" class="handleBackgroundButtons"
+                                            alt="None" title="None" onclick="handleBackgroundSettings(event)" />
+                                        <img src="../img/blur.jpg" width="180" id="handleBackgroundSettings" class="handleBackgroundButtons"
+                                            alt="Blur" title="Blur" onclick="handleBackgroundSettings(event)" />
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="shareTab" role="tabpanel" aria-labelledby="shareTab">
+                                    <div class="row pt-3">
+                                        <div class="col" id="meetingUrl"></div>
+                                    </div>
+                                    <div class="row pt-3">
+                                        <div class="col" id="meetingUrl"></div>
+                                    </div>
+                                    <div class="row pt-3">
+                                        <div class="col" id="shareMeetingUrlLabel"></div>
+                                    </div>
+                                    <div class="row pt-3">
+                                        <div class="col">
+                                            <button class="btn btn-primary" id="copyMeetingUrl">
+                                                <span id="copyMeetingUrlLabel"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="row pt-3">
+                                        <div class="col">
+                                            <button class="btn btn-primary" id="emailInvite">
+                                                <span id="emailInviteLabel"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End of Tab Content -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="breakoutRoomsModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="breakoutTitle"></h5>
+                    <button class="close" type="button" id="breakoutCloseButton" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body border-0" id="breakoutContent">
+                    <div id="breacountContentManagement">
+                        <div class="form-group">
+                            <label for="breakoutCountRooms" id="countRooms"></label>
+                            <div class="input-group">
+                                <div class="input-group-text">
+                                    <i class="fa-solid fa-solid fa-table-cells-large inlineicons"
+                                        aria-hidden="true"></i>
+                                </div>
+                                <select class="form-control form-select" id="breakoutCountRooms">
+                                    <option value="0">-</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="roomContainer">
+                        </div>
+                        <div class="form-group d-none" id="roomInputTpl">
+                            <input type="text" class="form-control waiting-fields">
+                        </div>
+                        <div class="form-group text-center">
+                            <input name="breakoutRoomsSubmit" id="breakoutRoomsSubmit" class="btn btn-block login-btn mb-4"
+                                type="submit">
+                        </div>
+                    </div>
+                    <div id="breacountContentRooms">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="videoPinMediaContainer"></div>
+    <div id="videoMediaContainer"></div>
+    <div id="localAudio"></div>
+    <div id="remoteAudios"></div>
+    <div id="sendFileDiv" class="center">
+        <img id="imgShareSend" src="../img/share.png" alt="Share" class="center-img" /><br />
+        <div id="sendFileInfo"></div>
+        <div id="sendFilePercentage"></div>
+        <progress id="sendProgress" max="0" value="0"></progress>
+        <button id="sendAbortBtn" class="fas fa-stop-circle">&nbsp; Abort</button>
+    </div>
+
+    <div id="receiveFileDiv" class="center">
+        <img id="imgShareReceive" src="../img/share.png" alt="" class="center-img" /><br />
+        <div id="receiveFileInfo"></div>
+        <div id="receiveFilePercentage"></div>
+        <progress id="receiveProgress" max="0" value="0"></progress>
+        <button id="receiveHideBtn" class="fas fa-eye-slash">&nbsp; Hide</button>
+    </div>
+
+    <section id="whiteboard" class="center hidden">
+        <header id="whiteboardHeader" class="whiteboard-header">
+            <div id="whiteboardTitle" class="whiteboard-header-title"></div>
+            <div class="whiteboard-header-options">
+                <button id="whiteboardCloseBtn" class="fas fa-times"></button>
+            </div>
+        </header>
+        <main>
+            <div class="whiteboard-left-options">
+                <input id="wbDrawingColorEl" class="whiteboardColorPicker" type="color" value="#484d75" />
+                <input id="wbBackgroundColorEl" class="whiteboardColorPicker" type="color" value="#ffffff" />
+                <button id="whiteboardPencilBtn" class="fas fa-pencil-alt"></button>
+                <button id="whiteboardObjectBtn" class="fas fa-mouse-pointer"></button>
+                <button id="whiteboardUndoBtn" class="fas fa-undo"></button>
+                <button id="whiteboardRedoBtn" class="fas fa-redo"></button>
+                <button id="whiteboardImgFileBtn" class="far fa-image"></button>
+                <button id="whiteboardImgUrlBtn" class="fas fa-link"></button>
+                <button id="whiteboardTextBtn" class="fas">
+                    <svg width="15" height="27.999999999999996" xmlns="http://www.w3.org/2000/svg">
+                        <g>
+                            <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="24"
+                                id="svg_1" y="21.6128" x="0" stroke-width="0" stroke="#000" fill="#484d75">T</text>
+                        </g>
+                    </svg>
+                </button>
+                <button id="whiteboardLineBtn" class="fas fa-slash"></button>
+                <button id="whiteboardRectBtn" class="far fa-square"></button>
+                <button id="whiteboardTriangleBtn" class="fas">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="#484d75">
+                        <path d="M12 5.887l8.468 14.113h-16.936l8.468-14.113zm0-3.887l-12 20h24l-12-20z" />
+                    </svg>
+                </button>
+                <button id="whiteboardCircleBtn" class="far fa-circle"></button>
+                <button id="whiteboardSaveBtn" class="fas fa-save"></button>
+                <button id="whiteboardEraserBtn" class="fas fa-eraser"></button>
+                <button id="whiteboardCleanBtn" class="fas fa-trash"></button>
+            </div>
+            <canvas id="wbCanvas"></canvas>
+        </main>
+    </section>
+
+
+    <section style="display: none;" class="container" id="chatRoom">
+        <div class="row clearfix">
+            <div class="col-lg-12">
+                <div class="card chat-app">
+                    <div id="plist" class="people-list">
+                        <ul class="list-unstyled chat-list mt-2 mb-0" id="chatAttendees">
+                        </ul>
+                    </div>
+                    <div class="chat" id="chatContent">
+                        <div class="chat-header clearfix">
+                            <div class="row">
+                                <div class="col-12">
+                                    <a href="javascript:void(0);" id="attendeeAvatar"></a>
+                                    <div class="chat-about" id="attendeeName"></div>
+                                    <a href="javascript:void(0);" id="toggleChatPin"
+                                        class="btn btn-outline-secondary btn-sm position-absolute" style="right:8rem; top: 0.5rem;">
+                                        <i class="fa-solid fa-right-to-bracket" id="togglePinRight"></i></a>
+                                    <a href="javascript:void(0);" id="toggleChatBackground"
+                                        class="btn btn-outline-secondary btn-sm position-absolute" style="right:5.5rem; top: 0.5rem;">
+                                        <i class="fa-regular fa-images"></i></a>
+                                    <a href="javascript:void(0);" id="toggleShowAttendees"
+                                        class="btn btn-outline-secondary btn-sm position-absolute" style="right:3rem; top: 0.5rem;">
+                                        <i class="fa-solid fa-minimize"></i></a>
+                                    <a href="javascript:void(0);" id="chatCloseButton"
+                                        class="btn btn-outline-danger btn-sm position-absolute" style="right:0.5rem; top: 0.5rem;">
+                                        <i class="fa-solid fa-rectangle-xmark"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-history" id="chatHistory">
+                            <ul class="m-b-0" id="chatBoard">
+                            </ul>
+                        </div>
+                        <div class="chat-message clearfix">
+                            <div class="input-group mb-0">
+                                <span class="input-group-text"><i class="fa fa-send" id="chatSendButton"></i></span>
+                                <input type="text" class="form-control" id="chatMessage">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal" id="waitingRoom" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="waitingRoomHeaderTitle"></h5>
+                </div>
+                <div class="modal-body" id="waitingRoomUsers">
+                    <table class="table" id="waitingTb">
+                        <tr id="waitingAll">
+                            <td>&nbsp;<i class="fas fa-users fa-lg"></i></td>
+                            <td>All</td>
+                            <td>
+                                <button id="waitingAcceptAllBtn" onclick="rc.waitingAcceptAll()"></button>
+                            </td>
+                            <td>
+                                <button id="waitingRejectAllBtn" onclick="rc.waitingRejectAll()"></button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="actionModal" tabindex="-1" role="dialog" aria-labelledby="actionModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="actionModalTitle"></h5>
+                </div>
+                <div class="modal-body" id="actionModalBody"></div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-primary" type="button" id="actionModalOkButton"></button>
+                    <button class="btn btn-secondary" type="button" id="actionModalDismissButton"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <span id="translateMessage" class="translateMessage" style="display: none;"></span>
+
+    <div class="outerBackground">
+        <div class="innerBackground" id="virtualBackgroundTemp">
+
+        </div>
+    </div>
+    <img id="backgroundImage" style="position:absolute; left: -10000px;" />
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+</body>
+
+</html>
